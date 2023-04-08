@@ -3,8 +3,11 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"strconv"
+	"time"
 
 	"github.com/3n3a/httpproxy-cache-api/modules/utils"
+	"github.com/redis/go-redis/v9"
 	"github.com/uptrace/bunrouter"
 	"github.com/uptrace/bunrouter/extra/reqlog"
 )
@@ -19,7 +22,22 @@ func main() {
 		bunrouter.WithMethodNotAllowedHandler(methodNotAllowedHandler),
 	)
 
+	r := utils.Redis{}
+	r.Init()
+
 	router.GET("/v1/ping", func(w http.ResponseWriter, req bunrouter.Request) error {
+		value, err := r.Get("counter")
+		if err == redis.Nil {
+			r.Set("counter", 0, 5*time.Hour)
+		}
+
+		counter, _ := strconv.Atoi(value)
+		counter++
+
+		r.Set("counter", counter, 5*time.Hour)
+
+		fmt.Println(counter)
+
 		fmt.Fprintf(
 			w,
 			"pong",
