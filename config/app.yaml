@@ -1,0 +1,2 @@
+proxy-path: ./config/proxy.yaml
+port: 5001
