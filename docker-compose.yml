@@ -16,7 +16,7 @@ services:
       - "6379:6379"
 
   hca:
-    image: hca # local image
+    image: 3n3a/httpproxy-cache-api:latest
     volumes:
       - ./config/app.prod.yaml:/app/config/app.yaml
       - ./config/proxy.prod.yaml:/app/config/proxy.yaml

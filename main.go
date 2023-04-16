@@ -193,6 +193,9 @@ func (s *Server) proxyHandler(w http.ResponseWriter, req bunrouter.Request) erro
 			w.Header().Add(headerKey, headerValue[0])
 		}
 
+		// Add Header Telling that was from Cache
+		w.Header().Add("X-Served-By", "HTTP Proxy Cache API V1.0.0")
+
 		w.Write(decodedValue)
 	}
 
