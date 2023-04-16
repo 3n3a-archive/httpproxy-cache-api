@@ -28,3 +28,9 @@ services:
     image: wsa # local image
     volumes:
       - ../webscanner-api/config/generator-tag-technologies.yaml:/app/config/generator-tag-technologies.yaml
+      - ../webscanner-api/geodb/GeoLite2-ASN.mmdb:/app/geodb/GeoLite2-ASN.mmdb
+      - ../webscanner-api/geodb/GeoLite2-City.mmdb:/app/geodb/GeoLite2-City.mmdb
+      - ../webscanner-api/geodb/GeoLite2-Country.mmdb:/app/geodb/GeoLite2-Country.mmdb
+    environment:
+      - GEOIP_CITY_DB_PATH=/app/geodb/GeoLite2-City.mmdb
+      - GEOIP_ASN_DB_PATH=/app/geodb/GeoLite2-ASN.mmdb
