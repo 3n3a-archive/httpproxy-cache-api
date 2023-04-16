@@ -5,6 +5,7 @@ services:
     image: redis:7.0
     volumes:
       - ./config/redis.conf:/redis.conf
+      - redis_data:/data
     command: ["redis-server", "/redis.conf"]
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
@@ -25,7 +26,7 @@ services:
       - APP_CONFIG_PATH=/app/config/app.yaml
 
   wsa:
-    image: wsa # local image
+    image: 3n3a/webscanner-api:latest
     volumes:
       - ../webscanner-api/config/generator-tag-technologies.yaml:/app/config/generator-tag-technologies.yaml
       - ../webscanner-api/geodb/GeoLite2-ASN.mmdb:/app/geodb/GeoLite2-ASN.mmdb
@@ -34,3 +35,6 @@ services:
     environment:
       - GEOIP_CITY_DB_PATH=/app/geodb/GeoLite2-City.mmdb
       - GEOIP_ASN_DB_PATH=/app/geodb/GeoLite2-ASN.mmdb
+
+volumes:
+  redis_data:
