@@ -35,6 +35,7 @@ services:
     environment:
       - GEOIP_CITY_DB_PATH=/app/geodb/GeoLite2-City.mmdb
       - GEOIP_ASN_DB_PATH=/app/geodb/GeoLite2-ASN.mmdb
+      - GENERATOR_TECHNOLOGIES_YAML_FILE=/app/config/generator-tag-technologies.yaml
 
 volumes:
   redis_data:
