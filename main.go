@@ -1,6 +1,8 @@
 package main
 
 import (
+	"crypto/md5"
+	b64 "encoding/base64"
 	"fmt"
 	"io"
 	"net/http"
@@ -18,6 +20,8 @@ const (
 	PROXY_PATH = "./config/app.yaml"
 )
 
+var red utils.Redis
+
 func main() {
 	port, err := strconv.ParseInt(getConfigValue("port").(string), 0, 0)
 	if err != nil {
@@ -32,7 +36,7 @@ func main() {
 		bunrouter.WithMethodNotAllowedHandler(methodNotAllowedHandler),
 	)
 
-	red := utils.Redis{}
+	red = utils.Redis{}
 	red.Init()
 
 	router.GET("/v1/ping", func(w http.ResponseWriter, req bunrouter.Request) error {
@@ -75,6 +79,7 @@ func getConfigValue(key string) any {
 }
 
 func proxyHandler(w http.ResponseWriter, req bunrouter.Request) error {
+	// Get Base Url for Key
 	key := req.Param("key")
 	path := req.Param("path")
 	urlMap, err := utils.ReadYAMLIntoStruct[map[string]string](
@@ -84,30 +89,59 @@ func proxyHandler(w http.ResponseWriter, req bunrouter.Request) error {
 	if err != nil {
 		fmt.Println("File not found")
 	}
+	builtUrl := fmt.Sprintf("%s/%s", url, path)
 
+	// Read Input Body
 	defer req.Body.Close()	
 	reqBody, err := io.ReadAll(req.Body)
 	if err != nil {
 		fmt.Println("Error reading req body")
 	}
 
-	client := hReq.C()
-	client.Headers = req.Header
-	cReq := client.R()
-	cReq.Method = req.Method
-	cReq.SetURL(fmt.Sprintf("%s/%s", url, path))
-	cReq.SetBody(reqBody)
-	res := cReq.Do()
-	err = res.Err
+	// Hash the Body
+	rawBodyHash := md5.Sum([]byte(reqBody))
+	bodyHash := fmt.Sprintf("%x", rawBodyHash)
+
+	cachedValue, err := red.Get(bodyHash)
 	if err != nil {
-		fmt.Printf("Error Req: %s\n", err.Error())
+		fmt.Println("Error getting cached value")
 	}
 
-	for headerKey, headerValue := range res.Response.Header {
-		w.Header().Add(headerKey, headerValue[0])
+	if err == redis.Nil {
+		fmt.Println("Requesting from origin")
+		// Proxy Request Headers & Body
+		client := hReq.C()
+		client.Headers = req.Header
+		cReq := client.R()
+		cReq.Method = req.Method
+		cReq.SetURL(builtUrl)
+		cReq.SetBody(reqBody)
+		res := cReq.Do()
+		err = res.Err
+		if err != nil {
+			fmt.Printf("Error Req: %s\n", err.Error())
+		}
+
+		// Proxy Response Headers
+		for headerKey, headerValue := range res.Response.Header {
+			w.Header().Add(headerKey, headerValue[0])
+		}
+	
+		// Proxy Response Body
+		w.Write(res.Bytes())
+
+		// Cache Body
+		encodedValue := b64.StdEncoding.EncodeToString(res.Bytes())
+		red.Set(bodyHash, encodedValue, 24*time.Hour)
+	} else {
+		fmt.Println("Returning cached response")
+		decodedValue, err := b64.StdEncoding.DecodeString(cachedValue)
+		if err != nil {
+			fmt.Println("Error decoding b64 value;", err)
+		}
+		w.Write(decodedValue)
 	}
 
-	w.Write(res.Bytes())
 
 	return nil
 }
