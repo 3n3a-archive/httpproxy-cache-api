@@ -13,13 +13,3 @@ services:
       retries: 3
     ports:
       - "6379:6379"
-
-  hca:
-    image: hca
-    volumes:
-      - ./config/app.yaml:/app/config/app.yaml
-      - ./config/proxy.yaml:/app/config/proxy.yaml
-    ports:
-      - "5001:5001"
-    environment:
-      - APP_CONFIG_PATH=/app/config/app.yaml
