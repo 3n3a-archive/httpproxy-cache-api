@@ -1,0 +1,3 @@
+proxy-path: /app/config/proxy.yaml
+port: 5001
+redis-url: redis://redis:6379

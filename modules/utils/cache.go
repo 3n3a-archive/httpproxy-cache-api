@@ -13,8 +13,8 @@ type Redis struct {
 	context context.Context
 }
 
-func (r *Redis) Init() {
-	opt, err := redis.ParseURL("redis://localhost:6379")
+func (r *Redis) Init(redisUrl string) {
+	opt, err := redis.ParseURL(redisUrl)
 	if err != nil {
 		panic(err)
 	}

@@ -17,7 +17,7 @@ services:
   hca:
     image: hca
     volumes:
-      - ./config/app.yaml:/app/config/app.yaml
+      - ./config/app.prod.yaml:/app/config/app.yaml
       - ./config/proxy.yaml:/app/config/proxy.yaml
     ports:
       - "5001:5001"

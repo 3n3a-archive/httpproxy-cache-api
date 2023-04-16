@@ -1,1 +1,1 @@
-wsa: http://localhost:5000/v1
+wsa: http://host.docker.internal:5000/v1

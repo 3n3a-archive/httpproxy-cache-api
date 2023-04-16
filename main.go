@@ -42,7 +42,7 @@ func (s *Server) Init() {
 	)
 	
 	s.RedisClient = utils.Redis{}
-	s.RedisClient.Init()
+	s.RedisClient.Init(s.getConfigValue("redis-url").(string))
 	
 	router.GET("/v1/ping", s.pingHandler)
 	
@@ -126,9 +126,6 @@ func (s *Server) proxyHandler(w http.ResponseWriter, req bunrouter.Request) erro
 	headerKey := fmt.Sprintf("%s-header", bodyHash)
 
 	cachedValue, err := s.RedisClient.Get(bodyHash)
-	if err != nil {
-		fmt.Println("Error getting cached value")
-	}
 
 	if err == redis.Nil {
 		fmt.Println("Requesting from origin")
