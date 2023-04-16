@@ -15,11 +15,16 @@ services:
       - "6379:6379"
 
   hca:
-    image: hca
+    image: hca # local image
     volumes:
       - ./config/app.prod.yaml:/app/config/app.yaml
-      - ./config/proxy.yaml:/app/config/proxy.yaml
+      - ./config/proxy.prod.yaml:/app/config/proxy.yaml
     ports:
       - "5001:5001"
     environment:
       - APP_CONFIG_PATH=/app/config/app.yaml
+
+  wsa:
+    image: wsa # local image
+    volumes:
+      - ../webscanner-api/config/generator-tag-technologies.yaml:/app/config/generator-tag-technologies.yaml
