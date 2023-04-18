@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"crypto/md5"
 	b64 "encoding/base64"
 	"encoding/json"
@@ -119,7 +120,11 @@ func (s *Server) proxyHandler(w http.ResponseWriter, req bunrouter.Request) erro
 	}
 
 	// Hash the Body
-	rawBodyHash := md5.Sum([]byte(reqBody))
+	headerJSON, err := json.Marshal(req.Header)
+	if err != nil {
+		fmt.Println("Headers couldnt be converted to JSON.")
+	}
+	rawBodyHash := md5.Sum(bytes.Join([][]byte{reqBody, []byte(builtUrl), []byte(req.Method), []byte(headerJSON)}, []byte(" ")))
 	bodyHash := fmt.Sprintf("%x", rawBodyHash)
 
 	// Header Key
